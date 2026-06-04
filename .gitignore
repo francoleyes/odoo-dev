@@ -1,0 +1,23 @@
+# Bytecode y caches
+__pycache__/
+*.pyc
+
+# Editores
+.idea/
+.DS_Store
+
+# Generados en runtime — no commitear
+.env
+odoo.conf
+
+# Origen real (URL/credenciales personales) y el requirements bajado — no commitear
+# Se versiona solo requirements.source.example (con placeholders)
+requirements.source
+requirements.txt
+
+# Repos clonados localmente — no commitear (pero sí el .gitkeep del directorio)
+repositories/*
+!repositories/.gitkeep
+
+# Generado por initializeCommand desde .tpl
+.devcontainer/odoo.code-workspace

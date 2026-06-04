@@ -1,0 +1,123 @@
+services:
+  odoo:
+    build:
+      context: .
+      args:
+        ODOO_VERSION: ${ODOO_VERSION:?Set ODOO_VERSION in .env}
+    image: pacing-odoo-dev:${ODOO_VERSION}.0
+    container_name: ${ODOO_VERSION}-odoo
+    command: sleep infinity
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=adhoc
+      - traefik.http.services.odoo-${ODOO_VERSION}-web.loadbalancer.server.port=8069
+      - traefik.http.routers.odoo-${ODOO_VERSION}-web.service=odoo-${ODOO_VERSION}-web
+      - traefik.http.routers.odoo-${ODOO_VERSION}-web.entrypoints=web
+      - traefik.http.routers.odoo-${ODOO_VERSION}-web.rule=(Host(`${ODOO_VERSION}.odoo.localhost`) || HostRegexp(`^[a-z0-9_-]+\.${ODOO_VERSION}\.odoo\.localhost$$`)) && !PathPrefix(`/websocket`)
+      - traefik.http.routers.odoo-${ODOO_VERSION}-web.priority=200
+      - traefik.http.services.odoo-${ODOO_VERSION}-ws.loadbalancer.server.port=8072
+      - traefik.http.routers.odoo-${ODOO_VERSION}-ws.service=odoo-${ODOO_VERSION}-ws
+      - traefik.http.routers.odoo-${ODOO_VERSION}-ws.entrypoints=web
+      - traefik.http.routers.odoo-${ODOO_VERSION}-ws.rule=(Host(`${ODOO_VERSION}.odoo.localhost`) || HostRegexp(`^[a-z0-9_-]+\.${ODOO_VERSION}\.odoo\.localhost$$`)) && PathPrefix(`/websocket`)
+      - traefik.http.routers.odoo-${ODOO_VERSION}-ws.priority=210
+    environment:
+      ODOO_VERSION: "${ODOO_VERSION:?Set ODOO_VERSION in .env}"
+    dns:
+      - "10.${ODOO_VERSION}.0.10"
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf:z
+      - ./repositories:/opt/odoo/repositories:z
+      - odoo_data:/var/lib/odoo:z
+    depends_on:
+      - db
+      - smtp
+    networks:
+      default: null
+      adhoc: null
+      pacing:
+        ipv4_address: 10.${ODOO_VERSION}.0.19
+
+  db:
+    image: postgres:17-alpine
+    container_name: ${ODOO_VERSION}-db
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    volumes:
+      - db_data:/var/lib/postgresql/data:z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - default
+
+  pgweb:
+    image: sosedoff/pgweb
+    container_name: ${ODOO_VERSION}-pgweb
+    ports:
+      - "127.0.0.1:${PGWEB_PORT:-8081}:8081"
+    environment:
+      DATABASE_URL: "postgres://odoo:odoo@db:5432/postgres?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - default
+
+  smtp:
+    image: axllent/mailpit
+    container_name: ${ODOO_VERSION}-smtp
+    ports:
+      - "127.0.0.1:${MAILPIT_HTTP_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+    networks:
+      - default
+
+  traefik:
+    image: traefik:v2.10
+    container_name: ${ODOO_VERSION}-traefik
+    profiles:
+      - local-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      pacing:
+        ipv4_address: 10.${ODOO_VERSION}.0.11
+
+  dns:
+    image: cytopia/bind:alpine-0.30
+    container_name: ${ODOO_VERSION}-dns
+    restart: unless-stopped
+    environment:
+      DNS_A: "*.odoo.localhost=10.${ODOO_VERSION}.0.11"
+      DNS_FORWARDER: "127.0.0.11,8.8.8.8,8.8.4.4"
+    networks:
+      pacing:
+        ipv4_address: 10.${ODOO_VERSION}.0.10
+
+volumes:
+  odoo_data:
+  db_data:
+
+networks:
+  adhoc:
+    external: true
+  default:
+    driver: bridge
+  pacing:
+    name: ${ODOO_VERSION}_pacing
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.${ODOO_VERSION}.0.0/24

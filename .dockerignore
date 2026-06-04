@@ -1,0 +1,6 @@
+.git
+.env
+odoo.conf
+.devcontainer/odoo.code-workspace
+# Los repos van por volumen en runtime — no deben entrar al build context
+repositories/

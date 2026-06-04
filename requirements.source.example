@@ -1,0 +1,14 @@
+# requirements.source.example — plantilla. Copiá a `requirements.source` y completá.
+#
+#   cp requirements.source.example requirements.source
+#   # editá REQUIREMENTS_REPO con tu repo
+#
+# `requirements.source` está gitignored: contiene tu URL/credenciales, no se versiona.
+# setup.sh clona ese repo (con tu auth SSH del host) y baja el requirements.txt.
+#
+# REQUIREMENTS_REF es opcional; si se omite, setup.sh usa "<VERSION>.0" (ej. "18.0" o "19.0")
+# según el nombre de la carpeta. Si la rama no existe, se crea un requirements.txt vacío.
+
+REQUIREMENTS_REPO=git@github.com:<owner>/<repo>.git
+# REQUIREMENTS_REF=18.0   # opcional — por defecto usa <VERSION>.0
+REQUIREMENTS_PATH=requirements.txt

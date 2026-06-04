@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Odoo (DevContainer)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "/usr/bin/python3",
+      "program": "/usr/bin/odoo",
+      "args": [
+        "-c", "/etc/odoo/odoo.conf",
+        "--http-interface", "0.0.0.0",
+        // "-d", "mi_base",        // especificá la DB si querés arrancar directo
+        // "-i", "base",           // instalar módulos
+        // "-u", "mi_modulo",      // actualizar módulo
+        // "--dev", "all"          // modo dev (recarga automática, etc.)
+      ],
+      "cwd": "/opt/odoo/repositories",
+      "justMyCode": false,
+      "env": {
+        "GEVENT_SUPPORT": "True"
+      }
+    }
+  ]
+}

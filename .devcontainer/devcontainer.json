@@ -1,0 +1,31 @@
+{
+  "name": "Odoo Dev",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "odoo",
+  "initializeCommand": "bash setup.sh && bash -c 'set -a && source .env && set +a && envsubst < .devcontainer/odoo.code-workspace.tpl > .devcontainer/odoo.code-workspace'",
+  "workspaceFolder": "/opt/odoo/repositories",
+  "mounts": [
+    "source=${localWorkspaceFolder}/.devcontainer/odoo.code-workspace,target=/opt/odoo/repositories/odoo.code-workspace,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.vscode/launch.json,target=/opt/odoo/repositories/.vscode/launch.json,type=bind",
+    "source=${localWorkspaceFolder}/.vscode/settings.json,target=/opt/odoo/repositories/.vscode/settings.json,type=bind"
+  ],
+  "postCreateCommand": "python3 -c 'import debugpy' && echo '[postCreate] debugpy OK' || echo '[postCreate] WARNING: debugpy not found — rebuild the image'",
+  "postStartCommand": "bash -lc 'bash /usr/local/bin/devcontainer-start'",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.cwd": "/opt/odoo/repositories",
+        "python.defaultInterpreterPath": "/usr/bin/python3"
+      },
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.python",
+        "streetsidesoftware.code-spell-checker",
+        "shardulm94.trailing-spaces",
+        "mechatroner.rainbow-csv",
+        "GitHub.copilot-chat"
+      ]
+    }
+  }
+}
