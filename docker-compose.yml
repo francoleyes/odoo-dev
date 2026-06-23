@@ -9,7 +9,7 @@ services:
     command: sleep infinity
     labels:
       - traefik.enable=true
-      - traefik.docker.network=adhoc
+      - traefik.docker.network=pacing-shared
       - traefik.http.services.odoo-${ODOO_VERSION}-web.loadbalancer.server.port=8069
       - traefik.http.routers.odoo-${ODOO_VERSION}-web.service=odoo-${ODOO_VERSION}-web
       - traefik.http.routers.odoo-${ODOO_VERSION}-web.entrypoints=web
@@ -33,7 +33,7 @@ services:
       - smtp
     networks:
       default: null
-      adhoc: null
+      pacing-shared: null
       pacing:
         ipv4_address: 10.${ODOO_VERSION}.0.19
 
@@ -78,8 +78,6 @@ services:
   traefik:
     image: traefik:v2.10
     container_name: ${ODOO_VERSION}-traefik
-    profiles:
-      - local-traefik
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -92,6 +90,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     networks:
+      pacing-shared: null
       pacing:
         ipv4_address: 10.${ODOO_VERSION}.0.11
 
@@ -100,7 +99,7 @@ services:
     container_name: ${ODOO_VERSION}-dns
     restart: unless-stopped
     environment:
-      DNS_A: "*.odoo.localhost=10.${ODOO_VERSION}.0.11"
+      DNS_A: "${ODOO_VERSION}.odoo.localhost=10.${ODOO_VERSION}.0.11,*.${ODOO_VERSION}.odoo.localhost=10.${ODOO_VERSION}.0.11"
       DNS_FORWARDER: "127.0.0.11,8.8.8.8,8.8.4.4"
     networks:
       pacing:
@@ -111,7 +110,7 @@ volumes:
   db_data:
 
 networks:
-  adhoc:
+  pacing-shared:
     external: true
   default:
     driver: bridge

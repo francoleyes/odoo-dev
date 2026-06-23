@@ -6,8 +6,7 @@
   "workspaceFolder": "/opt/odoo/repositories",
   "mounts": [
     "source=${localWorkspaceFolder}/.devcontainer/odoo.code-workspace,target=/opt/odoo/repositories/odoo.code-workspace,type=bind,readonly",
-    "source=${localWorkspaceFolder}/.vscode/launch.json,target=/opt/odoo/repositories/.vscode/launch.json,type=bind",
-    "source=${localWorkspaceFolder}/.vscode/settings.json,target=/opt/odoo/repositories/.vscode/settings.json,type=bind"
+    "source=${localWorkspaceFolder}/.vscode,target=/opt/odoo/repositories/.vscode,type=bind"
   ],
   "postCreateCommand": "python3 -c 'import debugpy' && echo '[postCreate] debugpy OK' || echo '[postCreate] WARNING: debugpy not found — rebuild the image'",
   "postStartCommand": "bash -lc 'bash /usr/local/bin/devcontainer-start'",

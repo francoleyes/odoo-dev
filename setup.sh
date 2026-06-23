@@ -65,6 +65,27 @@ if [[ ! -f requirements.txt ]]; then
   : > requirements.txt
 fi
 
+if ! docker network inspect pacing-shared &>/dev/null; then
+  docker network create pacing-shared
+  echo "[setup] Red Docker 'pacing-shared' creada."
+fi
+
+# Configura systemd-resolved para resolver *.${VERSION}.odoo.localhost via el container DNS.
+# Cada versión tiene su propio archivo para que v17/v18/v19 coexistan sin conflictos.
+RESOLVED_CONF="/etc/systemd/resolved.conf.d/odoo-${VERSION}.conf"
+DNS_IP="10.${VERSION}.0.10"
+if [[ ! -f "${RESOLVED_CONF}" ]] || ! grep -q "DNS=${DNS_IP}" "${RESOLVED_CONF}" 2>/dev/null; then
+  echo "[setup] Configurando DNS del host para ${VERSION}.odoo.localhost (requiere sudo)..."
+  sudo mkdir -p /etc/systemd/resolved.conf.d
+  sudo tee "${RESOLVED_CONF}" > /dev/null <<EOF
+[Resolve]
+DNS=${DNS_IP}
+Domains=~${VERSION}.odoo.localhost
+EOF
+  sudo systemctl restart systemd-resolved
+  echo "[setup] DNS: ${VERSION}.odoo.localhost → ${DNS_IP}"
+fi
+
 echo "[setup] Listo para Odoo ${VERSION}."
 echo "        pgweb   → http://localhost:808${VER_LAST}"
 echo "        mailpit → http://localhost:802${VER_LAST}"

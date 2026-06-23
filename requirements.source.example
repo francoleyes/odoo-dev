@@ -9,6 +9,6 @@
 # REQUIREMENTS_REF es opcional; si se omite, setup.sh usa "<VERSION>.0" (ej. "18.0" o "19.0")
 # según el nombre de la carpeta. Si la rama no existe, se crea un requirements.txt vacío.
 
-REQUIREMENTS_REPO=git@github.com:<owner>/<repo>.git
+# REQUIREMENTS_REPO=git@github.com:<owner>/<repo>.git
 # REQUIREMENTS_REF=18.0   # opcional — por defecto usa <VERSION>.0
 REQUIREMENTS_PATH=requirements.txt
