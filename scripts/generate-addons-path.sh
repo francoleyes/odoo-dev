@@ -17,9 +17,18 @@ fi
 
 ADDONS_PATH=""
 
-# 1) Repos locales — cada subcarpeta directa de repositories/
+# 1) Repos locales — cada subcarpeta directa de repositories/ que contenga
+#    al menos un módulo (*/__manifest__.py). El filtro deja afuera las carpetas
+#    de herramientas (.claude, .vscode) y el clon de odoo, cuyos módulos están
+#    un nivel más abajo (odoo/addons/): el core sale de la imagen oficial, como
+#    dice el Dockerfile, y ese clon es sólo para leer código.
 if [[ -d "${REPO_ROOT}" ]]; then
-  local_paths="$(find "${REPO_ROOT}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
+  local_paths="$(find "${REPO_ROOT}" -mindepth 1 -maxdepth 1 -type d -not -name '.*' 2>/dev/null \
+    | while read -r d; do
+        if [[ -n "$(find "${d}" -mindepth 2 -maxdepth 2 -name __manifest__.py -print -quit 2>/dev/null)" ]]; then
+          echo "${d}"
+        fi
+      done \
     | sort -u | paste -sd, -)"
   [[ -n "${local_paths}" ]] && ADDONS_PATH="${local_paths}"
 fi
